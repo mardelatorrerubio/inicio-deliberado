@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Inicio Deliberado" />
+  <title>Inicio Deliberado</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <style>
+    :root{--bg:#0f0f0f;--card:#191919;--text:#f5f5f5;--muted:#aaa;--line:#2a2a2a;--accent:#fff;--danger:#ff6b6b}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .wrap{max-width:820px;margin:auto;padding:16px}.hero{padding-top:max(26px,env(safe-area-inset-top));padding-bottom:6px}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand h1{font-size:22px;margin:0}.sub{color:var(--muted);font-size:13px;margin-top:4px}
+    button,input{font:inherit}.btn{border:1px solid var(--line);background:#222;color:#fff;border-radius:999px;padding:9px 13px}.btn.primary{background:#fff;color:#111;border-color:#fff}.btn.danger{color:#ffb1b1}.btn:active,.quick:active{transform:scale(.98)}
+    .search{display:flex;gap:8px;margin:22px 0 18px}.search input{flex:1;min-width:0;background:#fff;color:#111;border:0;border-radius:16px;padding:15px 16px;font-size:16px;outline:none}.search button{border:0;background:#fff;color:#111;border-radius:16px;padding:0 16px;font-weight:700}
+    .section-title{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:22px 0 10px}.section-title h2{font-size:16px;margin:0}.section-title span{font-size:12px;color:var(--muted)}
+    .quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick{display:flex;align-items:center;gap:11px;text-decoration:none;color:#fff;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px;min-height:62px}.quick .mark{width:36px;height:36px;border-radius:10px;background:#262626;display:grid;place-items:center;font-weight:800;font-size:13px;flex:0 0 auto}.quick b{display:block;font-size:14px;line-height:1.2}.quick small{display:block;color:var(--muted);margin-top:3px;font-size:11px}
+    .divider{height:1px;background:var(--line);margin:24px 0 0}.youtube-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.actions{display:flex;gap:8px}
+    .filters{display:flex;gap:8px;overflow:auto;padding:10px 0 4px}.chip{white-space:nowrap;border:1px solid var(--line);background:#181818;color:#ddd;border-radius:999px;padding:7px 11px;font-size:13px}.chip.on{background:#fff;color:#111}
+    .notice{margin:10px 0 14px;padding:11px 13px;background:#171717;border:1px solid var(--line);border-radius:14px;color:#ccc;font-size:13px}
+    .feed{display:grid;gap:14px;padding-bottom:20px}.video{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}.thumb{display:block;position:relative;aspect-ratio:16/9;background:#222}.thumb img{width:100%;height:100%;object-fit:cover;display:block}.dur{position:absolute;right:7px;bottom:7px;background:rgba(0,0,0,.8);padding:3px 6px;border-radius:6px;font-size:12px}.meta{padding:12px}.title{font-weight:650;line-height:1.3;margin-bottom:6px}.row{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:13px}.channel{color:#ddd}.more-wrap{text-align:center;padding:0 0 70px}.more-wrap[hidden]{display:none}
+    dialog{width:min(680px,calc(100% - 24px));border:1px solid var(--line);border-radius:18px;background:#151515;color:#fff;padding:0}.dlg{padding:18px}.dlg h2{margin:0 0 12px;font-size:20px}.field{display:flex;gap:8px;margin:10px 0}.field input{min-width:0;flex:1;background:#0d0d0d;color:#fff;border:1px solid #333;border-radius:12px;padding:12px}.help{font-size:13px;color:var(--muted);line-height:1.45}.list{display:grid;gap:8px;margin-top:14px}.ch{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border:1px solid var(--line);border-radius:12px}.ch small{display:block;color:var(--muted)}
+    .empty{text-align:center;color:var(--muted);padding:36px 20px}.spinner{text-align:center;padding:28px;color:var(--muted)}
+    .player{position:fixed;inset:0;background:#000;z-index:100;display:none;flex-direction:column}.player.on{display:flex}.playerbar{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#111}.player iframe{border:0;width:100%;flex:1;background:#000}.player .pinfo{padding:12px 14px;background:#111}.player .pinfo b{display:block;margin-bottom:4px}.player .pinfo small{color:#aaa}
+    @media(min-width:700px){.quick-grid{grid-template-columns:repeat(4,1fr)}.feed{grid-template-columns:1fr 1fr}.video{height:max-content}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <div class="top"><div class="brand"><h1>Inicio Deliberado</h1><div class="sub">Busca o entra solo donde tú decidas.</div></div><button class="btn" id="openSettings">Ajustes</button></div>
+    <form class="search" action="https://www.google.com/search" method="get"><input name="q" type="search" autocomplete="off" enterkeyhint="search" placeholder="Buscar en Google…" aria-label="Buscar en Google"><button type="submit">Buscar</button></form>
+  </section>
+
+  <div class="section-title"><h2>Accesos directos</h2><span>Sin feed de noticias</span></div>
+  <div class="quick-grid">
+    <a class="quick" href="https://www.libertaddigital.com/"><span class="mark">LD</span><span><b>Libertad Digital</b><small>Portada</small></span></a>
+    <a class="quick" href="https://theobjective.com/"><span class="mark">TO</span><span><b>The Objective</b><small>Portada</small></span></a>
+    <a class="quick" href="https://www.vozpopuli.com/"><span class="mark">VP</span><span><b>Vozpópuli</b><small>Portada</small></span></a>
+    <a class="quick" href="https://www.abc.es/espana/andalucia/"><span class="mark">ABC</span><span><b>ABC Andalucía</b><small>Andalucía</small></span></a>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title youtube-head"><div><h2>YouTube seleccionado</h2><span>Solo tus canales</span></div><div class="actions"><button class="btn" id="refresh" aria-label="Actualizar">↻</button><button class="btn primary" id="openChannels">Canales</button></div></div>
+  <div class="filters"><button class="chip on" data-filter="all">Todos</button><button class="chip" data-filter="long">Sin cortos ≤ 3 min</button></div>
+  <div class="notice">Se muestran solo 12 vídeos cada vez. Nada de scroll infinito.</div>
+  <div id="feed" class="feed"></div>
+  <div id="moreWrap" class="more-wrap" hidden><button class="btn" id="showMore">Ver anteriores</button></div>
+</main>
+
+<dialog id="settings"><div class="dlg"><h2>Mis canales</h2><div class="field"><input id="channelInput" placeholder="Nombre, @handle, URL o ID UC…"><button class="btn primary" id="addChannel">Añadir</button></div><div class="help">Añade únicamente los canales que de verdad quieras ver. La app no inicia sesión en tu cuenta de Google.</div><div id="channelList" class="list"></div><hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><div class="help">Servidor Piped (avanzado)</div><div class="field"><input id="apiInput" placeholder="https://pipedapi..."><button class="btn" id="saveApi">Guardar</button></div><div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn" id="closeSettings">Cerrar</button></div></div></dialog>
+
+<div id="player" class="player"><div class="playerbar"><button class="btn" id="closePlayer">← Volver</button><span style="font-size:13px;color:#aaa">Sin autoplay · sin feed recomendado</span></div><iframe id="frame" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="pinfo"><b id="pTitle"></b><small id="pChannel"></small></div></div>
+<script>
+const DEFAULT_API='https://pipedapi.kavin.rocks';
+const PAGE_SIZE=12;
+const state={channels:JSON.parse(localStorage.getItem('yd_channels')||'[]'),api:localStorage.getItem('yd_api')||DEFAULT_API,filter:localStorage.getItem('yd_filter')||'all',visible:PAGE_SIZE,videos:[]};
+const $=s=>document.querySelector(s),feed=$('#feed'),settings=$('#settings');
+function save(){localStorage.setItem('yd_channels',JSON.stringify(state.channels));localStorage.setItem('yd_api',state.api);localStorage.setItem('yd_filter',state.filter)}
+function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function vidId(url=''){const m=url.match(/[?&]v=([^&]+)/)||url.match(/\/shorts\/([^?&/]+)/);return m&&m[1]}
+function fmtDur(s){s=Number(s||0);let m=Math.floor(s/60),sec=s%60;return m+':'+String(sec).padStart(2,'0')}
+function relative(d){return d||''}
+async function api(path){const r=await fetch(state.api.replace(/\/$/,'')+path);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+async function resolveChannel(q){q=q.trim();if(!q)throw new Error('Escribe un canal');const id=q.match(/UC[\w-]{20,}/)?.[0];if(id)return {id,name:id};let handle=q.match(/@([\w.-]+)/)?.[1];if(handle){try{let d=await api('/channel/'+encodeURIComponent('@'+handle));if(d?.id)return {id:d.id,name:d.name||'@'+handle}}catch(e){}}const data=await api('/search?q='+encodeURIComponent(q)+'&filter=channels');const items=data.items||data;const c=(items||[]).find(x=>x.type==='channel'||x.url?.includes('/channel/'))||(items||[])[0];if(!c)throw new Error('No encontré ese canal');const cid=c.url?.match(/\/channel\/(UC[\w-]+)/)?.[1]||c.id;if(!cid)throw new Error('No pude obtener el ID del canal');return {id:cid,name:c.name||c.uploaderName||q}}
+function renderVideos(){const visible=state.videos.slice(0,state.visible);if(!visible.length){feed.innerHTML='<div class="empty">No hay vídeos para mostrar con este filtro.</div>';$('#moreWrap').hidden=true;return}feed.innerHTML=visible.map(v=>{const id=vidId(v.url);const th=v.thumbnail||v.thumbnailUrl||`https://i.ytimg.com/vi/${id}/hqdefault.jpg`;return `<article class="video"><a href="#" class="thumb" data-id="${esc(id)}" data-title="${esc(v.title||'')}" data-channel="${esc(v._channel||'')}"><img loading="lazy" src="${esc(th)}" alt=""><span class="dur">${fmtDur(v.duration)}</span></a><div class="meta"><div class="title">${esc(v.title||'Sin título')}</div><div class="row"><span class="channel">${esc(v._channel||'')}</span><span>${esc(relative(v.uploadedDate||''))}</span></div></div></article>`}).join('');document.querySelectorAll('.thumb').forEach(a=>a.onclick=e=>{e.preventDefault();openPlayer(a.dataset.id,a.dataset.title,a.dataset.channel)});$('#moreWrap').hidden=state.visible>=state.videos.length}
+async function load(){state.visible=PAGE_SIZE;if(!state.channels.length){state.videos=[];feed.innerHTML='<div class="empty">Añade tus canales y aquí aparecerán sus últimos vídeos en orden cronológico.</div>';$('#moreWrap').hidden=true;return}feed.innerHTML='<div class="spinner">Cargando tus canales…</div>';$('#moreWrap').hidden=true;try{const results=await Promise.all(state.channels.map(async c=>{try{const d=await api('/channel/'+encodeURIComponent(c.id));if(d?.name&&c.name===c.id)c.name=d.name;return (d.relatedStreams||[]).slice(0,20).map(v=>({...v,_channel:d.name||c.name}))}catch(e){return []}}));save();let videos=results.flat().filter(v=>vidId(v.url));if(state.filter==='long')videos=videos.filter(v=>!v.duration||v.duration>180);videos.sort((a,b)=>{const ad=Date.parse(a.uploadDate||'')||0,bd=Date.parse(b.uploadDate||'')||0;return bd-ad});state.videos=videos;renderVideos()}catch(e){feed.innerHTML='<div class="empty">No pude cargar los vídeos. Abre “Canales” y prueba otro servidor Piped.<br><br><small>'+esc(e.message)+'</small></div>'}}
+function renderChannels(){const el=$('#channelList');el.innerHTML=state.channels.length?state.channels.map((c,i)=>`<div class="ch"><div><b>${esc(c.name)}</b><small>${esc(c.id)}</small></div><button class="btn danger" data-rm="${i}">Quitar</button></div>`).join(''):'<div class="help">Todavía no has añadido ningún canal.</div>';el.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{state.channels.splice(+b.dataset.rm,1);save();renderChannels();load()})}
+function openPlayer(id,title,channel){$('#frame').src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(id)+'?autoplay=0&rel=0&modestbranding=1';$('#pTitle').textContent=title;$('#pChannel').textContent=channel;$('#player').classList.add('on');history.pushState({player:true},'','#video')}
+function closePlayer(){if(!$('#player').classList.contains('on'))return;$('#frame').src='about:blank';$('#player').classList.remove('on');if(location.hash==='#video')history.back()}
+function openSettings(){renderChannels();$('#apiInput').value=state.api;settings.showModal()}
+$('#openSettings').onclick=openSettings;$('#openChannels').onclick=openSettings;$('#closeSettings').onclick=()=>settings.close();$('#refresh').onclick=load;$('#showMore').onclick=()=>{state.visible+=PAGE_SIZE;renderVideos()};
+$('#addChannel').onclick=async()=>{const b=$('#addChannel'),inp=$('#channelInput');b.disabled=true;b.textContent='Buscando…';try{const c=await resolveChannel(inp.value);if(!state.channels.some(x=>x.id===c.id))state.channels.push(c);inp.value='';save();renderChannels();load()}catch(e){alert(e.message)}finally{b.disabled=false;b.textContent='Añadir'}};
+$('#saveApi').onclick=()=>{state.api=$('#apiInput').value.trim()||DEFAULT_API;save();load();alert('Servidor guardado')};$('#closePlayer').onclick=closePlayer;window.addEventListener('popstate',()=>{if($('#player').classList.contains('on')){$('#frame').src='about:blank';$('#player').classList.remove('on')}});
+document.querySelectorAll('.chip').forEach(b=>{if(b.dataset.filter===state.filter)b.classList.add('on');else b.classList.remove('on');b.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');state.filter=b.dataset.filter;save();load()}});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');load();
+</script>
+</body>
+</html>

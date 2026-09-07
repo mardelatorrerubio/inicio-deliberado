@@ -1,0 +1,10 @@
+{
+  "name":"Inicio Deliberado",
+  "short_name":"Inicio",
+  "description":"Página de inicio personal sin feed algorítmico: búsqueda, accesos elegidos y YouTube seleccionado.",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#0f0f0f",
+  "theme_color":"#111111",
+  "icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
