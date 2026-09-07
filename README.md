@@ -1,23 +1,22 @@
-# Inicio Deliberado — móvil
+# Inicio Deliberado v2
 
-PWA minimalista diseñada para usarse como página principal del navegador: búsqueda, accesos que tú has elegido y un feed limitado de YouTube con solo tus canales.
+Página de inicio minimalista para Chrome/Android.
 
-## Portada
-- Buscador de Google, sin un feed de noticias debajo.
-- Accesos directos a Libertad Digital, The Objective, Vozpópuli y ABC Andalucía.
-- Feed de YouTube únicamente de los canales añadidos manualmente.
-- Solo se muestran 12 vídeos cada vez; para seguir hay que pulsar “Ver anteriores”. No hay scroll infinito.
-- El reproductor abre con autoplay desactivado y usando `youtube-nocookie.com`.
-- El filtro “Sin cortos ≤ 3 min” oculta cualquier vídeo de tres minutos o menos.
+## Qué cambia en v2
+- Añadir canales acepta directamente la URL de YouTube, @handle, nombre o ID `UC…`.
+- Si un servidor público Piped falla, prueba automáticamente varios servidores alternativos.
+- Los errores de red se muestran de forma comprensible en lugar de `Failed to fetch`.
+- Incluye `manifest.webmanifest`, `sw.js` e icono para instalación PWA real.
 
-## Cómo usarla como página principal en Chrome para Android
-1. Publica esta carpeta en una URL HTTPS (por ejemplo GitHub Pages, Cloudflare Pages, Netlify o Vercel).
-2. Abre Chrome → Configuración → Página principal.
-3. Activa la página principal y selecciona la opción de URL personalizada.
-4. Pega la URL pública de esta PWA.
-5. En la página Nueva pestaña de Chrome, desactiva Discover para eliminar el carrusel de noticias.
+## Actualizar GitHub Pages
+Sube/reemplaza **todos** estos archivos en la raíz del repositorio:
+- `index.html`
+- `manifest.webmanifest`
+- `sw.js`
+- `icon.svg`
+- `README.md`
 
-También puedes instalar la PWA desde Chrome mediante “Instalar aplicación” / “Añadir a pantalla de inicio”.
+Después de confirmar el commit, GitHub Pages volverá a publicar automáticamente.
 
-## Privacidad
-La lista de canales y la configuración se guardan localmente en el dispositivo. La app no inicia sesión en tu cuenta de Google. Para consultar vídeos usa una instancia pública de Piped, configurable desde Ajustes.
+## Añadir un canal
+Abre el canal en YouTube, copia la URL de la barra de direcciones y pégala en **Canales**. Las URL con `/channel/UC…` se pueden añadir sin resolver nada; las URL modernas con `/@handle` se resuelven mediante uno de los servidores públicos configurados.

@@ -52,30 +52,77 @@
   <div id="moreWrap" class="more-wrap" hidden><button class="btn" id="showMore">Ver anteriores</button></div>
 </main>
 
-<dialog id="settings"><div class="dlg"><h2>Mis canales</h2><div class="field"><input id="channelInput" placeholder="Nombre, @handle, URL o ID UC…"><button class="btn primary" id="addChannel">Añadir</button></div><div class="help">Añade únicamente los canales que de verdad quieras ver. La app no inicia sesión en tu cuenta de Google.</div><div id="channelList" class="list"></div><hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><div class="help">Servidor Piped (avanzado)</div><div class="field"><input id="apiInput" placeholder="https://pipedapi..."><button class="btn" id="saveApi">Guardar</button></div><div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn" id="closeSettings">Cerrar</button></div></div></dialog>
+<dialog id="settings"><div class="dlg"><h2>Mis canales</h2><div class="field"><input id="channelInput" placeholder="Pega la URL del canal de YouTube"><button class="btn primary" id="addChannel">Añadir</button></div><div class="help"><b>La forma más fácil:</b> abre el canal en YouTube, copia su dirección (por ejemplo, youtube.com/@canal) y pégala aquí. También puedes escribir un @handle, un nombre o un ID que empiece por UC. La app no inicia sesión en tu cuenta de Google.</div><div id="channelList" class="list"></div><hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><div class="help">Servidor de consulta (avanzado). Normalmente no necesitas tocarlo: la app cambia automáticamente a otro servidor si uno falla.</div><div class="field"><input id="apiInput" placeholder="Automático"><button class="btn" id="saveApi">Guardar</button></div><div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn" id="closeSettings">Cerrar</button></div></div></dialog>
 
 <div id="player" class="player"><div class="playerbar"><button class="btn" id="closePlayer">← Volver</button><span style="font-size:13px;color:#aaa">Sin autoplay · sin feed recomendado</span></div><iframe id="frame" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="pinfo"><b id="pTitle"></b><small id="pChannel"></small></div></div>
 <script>
 const DEFAULT_API='https://pipedapi.kavin.rocks';
+const API_CANDIDATES=[
+  'https://pipedapi.kavin.rocks',
+  'https://pipedapi.tokhmi.xyz',
+  'https://pipedapi.moomoo.me',
+  'https://pipedapi.syncpundit.io',
+  'https://api.looleh.xyz',
+  'https://piped-api.cfe.re',
+  'https://pipedapi-libre.kavin.rocks',
+  'https://pa.mint.lgbt',
+  'https://pa.il.ax',
+  'https://piped-api.privacy.com.de',
+  'https://api.piped.projectsegfau.lt'
+];
 const PAGE_SIZE=12;
-const state={channels:JSON.parse(localStorage.getItem('yd_channels')||'[]'),api:localStorage.getItem('yd_api')||DEFAULT_API,filter:localStorage.getItem('yd_filter')||'all',visible:PAGE_SIZE,videos:[]};
+const state={channels:JSON.parse(localStorage.getItem('yd_channels')||'[]'),api:localStorage.getItem('yd_api')||'',filter:localStorage.getItem('yd_filter')||'all',visible:PAGE_SIZE,videos:[]};
 const $=s=>document.querySelector(s),feed=$('#feed'),settings=$('#settings');
 function save(){localStorage.setItem('yd_channels',JSON.stringify(state.channels));localStorage.setItem('yd_api',state.api);localStorage.setItem('yd_filter',state.filter)}
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function vidId(url=''){const m=url.match(/[?&]v=([^&]+)/)||url.match(/\/shorts\/([^?&/]+)/);return m&&m[1]}
+function vidId(url=''){const m=url.match(/[?&]v=([^&]+)/)||url.match(/\/shorts\/([^?&/]+)/)||url.match(/youtu\.be\/([^?&/]+)/);return m&&m[1]}
 function fmtDur(s){s=Number(s||0);let m=Math.floor(s/60),sec=s%60;return m+':'+String(sec).padStart(2,'0')}
 function relative(d){return d||''}
-async function api(path){const r=await fetch(state.api.replace(/\/$/,'')+path);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
-async function resolveChannel(q){q=q.trim();if(!q)throw new Error('Escribe un canal');const id=q.match(/UC[\w-]{20,}/)?.[0];if(id)return {id,name:id};let handle=q.match(/@([\w.-]+)/)?.[1];if(handle){try{let d=await api('/channel/'+encodeURIComponent('@'+handle));if(d?.id)return {id:d.id,name:d.name||'@'+handle}}catch(e){}}const data=await api('/search?q='+encodeURIComponent(q)+'&filter=channels');const items=data.items||data;const c=(items||[]).find(x=>x.type==='channel'||x.url?.includes('/channel/'))||(items||[])[0];if(!c)throw new Error('No encontré ese canal');const cid=c.url?.match(/\/channel\/(UC[\w-]+)/)?.[1]||c.id;if(!cid)throw new Error('No pude obtener el ID del canal');return {id:cid,name:c.name||c.uploaderName||q}}
-function renderVideos(){const visible=state.videos.slice(0,state.visible);if(!visible.length){feed.innerHTML='<div class="empty">No hay vídeos para mostrar con este filtro.</div>';$('#moreWrap').hidden=true;return}feed.innerHTML=visible.map(v=>{const id=vidId(v.url);const th=v.thumbnail||v.thumbnailUrl||`https://i.ytimg.com/vi/${id}/hqdefault.jpg`;return `<article class="video"><a href="#" class="thumb" data-id="${esc(id)}" data-title="${esc(v.title||'')}" data-channel="${esc(v._channel||'')}"><img loading="lazy" src="${esc(th)}" alt=""><span class="dur">${fmtDur(v.duration)}</span></a><div class="meta"><div class="title">${esc(v.title||'Sin título')}</div><div class="row"><span class="channel">${esc(v._channel||'')}</span><span>${esc(relative(v.uploadedDate||''))}</span></div></div></article>`}).join('');document.querySelectorAll('.thumb').forEach(a=>a.onclick=e=>{e.preventDefault();openPlayer(a.dataset.id,a.dataset.title,a.dataset.channel)});$('#moreWrap').hidden=state.visible>=state.videos.length}
-async function load(){state.visible=PAGE_SIZE;if(!state.channels.length){state.videos=[];feed.innerHTML='<div class="empty">Añade tus canales y aquí aparecerán sus últimos vídeos en orden cronológico.</div>';$('#moreWrap').hidden=true;return}feed.innerHTML='<div class="spinner">Cargando tus canales…</div>';$('#moreWrap').hidden=true;try{const results=await Promise.all(state.channels.map(async c=>{try{const d=await api('/channel/'+encodeURIComponent(c.id));if(d?.name&&c.name===c.id)c.name=d.name;return (d.relatedStreams||[]).slice(0,20).map(v=>({...v,_channel:d.name||c.name}))}catch(e){return []}}));save();let videos=results.flat().filter(v=>vidId(v.url));if(state.filter==='long')videos=videos.filter(v=>!v.duration||v.duration>180);videos.sort((a,b)=>{const ad=Date.parse(a.uploadDate||'')||0,bd=Date.parse(b.uploadDate||'')||0;return bd-ad});state.videos=videos;renderVideos()}catch(e){feed.innerHTML='<div class="empty">No pude cargar los vídeos. Abre “Canales” y prueba otro servidor Piped.<br><br><small>'+esc(e.message)+'</small></div>'}}
+function apiOrder(){const saved=(state.api||'').trim().replace(/\/$/,'');return [...new Set([saved,...API_CANDIDATES].filter(Boolean))]}
+async function requestFrom(base,path){const ctl=new AbortController();const timer=setTimeout(()=>ctl.abort(),6500);try{const r=await fetch(base.replace(/\/$/,'')+path,{signal:ctl.signal,headers:{'Accept':'application/json'}});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();if(base!==state.api){state.api=base;save()}return data}finally{clearTimeout(timer)}}
+async function api(path){let last;for(const base of apiOrder()){try{return await requestFrom(base,path)}catch(e){last=e}}throw new Error('No se pudo conectar con los servidores de consulta. Prueba de nuevo dentro de unos minutos.')}
+function channelIdFromText(q=''){return q.match(/(?:\/channel\/)?(UC[\w-]{20,})/)?.[1]||null}
+function queryFromInput(q=''){
+  q=q.trim();
+  try{
+    const u=new URL(q.startsWith('http')?q:'https://'+q);
+    if(/(^|\.)youtube\.com$/.test(u.hostname.replace(/^www\./,''))||u.hostname.includes('youtube.com')){
+      const id=channelIdFromText(u.pathname);if(id)return {id};
+      const hm=u.pathname.match(/^\/@([^/?#]+)/);if(hm)return {query:'@'+decodeURIComponent(hm[1])};
+      const legacy=u.pathname.match(/^\/(?:c|user)\/([^/?#]+)/);if(legacy)return {query:decodeURIComponent(legacy[1])};
+    }
+  }catch(e){}
+  const id=channelIdFromText(q);if(id)return {id};
+  const handle=q.match(/@([\w.-]+)/)?.[1];if(handle)return {query:'@'+handle};
+  return {query:q};
+}
+function itemChannelId(c){return channelIdFromText(c?.url||'')||channelIdFromText(c?.id||'')||channelIdFromText(c?.uploaderUrl||'')}
+async function resolveChannel(q){
+  q=q.trim();if(!q)throw new Error('Pega la dirección de un canal de YouTube.');
+  const parsed=queryFromInput(q);if(parsed.id)return {id:parsed.id,name:parsed.id};
+  const term=parsed.query||q;
+  const data=await api('/search?q='+encodeURIComponent(term)+'&filter=channels');
+  const items=Array.isArray(data)?data:(data.items||[]);
+  const channels=items.filter(x=>x && (x.type==='channel'||/\/channel\/UC/.test(x.url||'')||itemChannelId(x)));
+  let c=channels[0];
+  if(term.startsWith('@')){
+    const needle=term.toLowerCase();
+    c=channels.find(x=>String(x.name||x.uploaderName||'').toLowerCase()===needle)||channels.find(x=>String(x.url||'').toLowerCase().includes(needle))||c;
+  }
+  if(!c)throw new Error('No encontré ese canal. Prueba pegando la URL exacta de su página de YouTube.');
+  const cid=itemChannelId(c);if(!cid)throw new Error('Encontré el canal, pero no pude obtener su identificador. Prueba con una URL del tipo youtube.com/channel/UC…');
+  return {id:cid,name:c.name||c.uploaderName||term};
+}
+function renderVideos(){const visible=state.videos.slice(0,state.visible);if(!visible.length){feed.innerHTML='<div class="empty">No hay vídeos para mostrar con este filtro.</div>';$('#moreWrap').hidden=true;return}feed.innerHTML=visible.map(v=>{const id=vidId(v.url);const th=v.thumbnail||v.thumbnailUrl||`https://i.ytimg.com/vi/${id}/hqdefault.jpg`;return `<article class="video"><a href="#" class="thumb" data-id="${esc(id)}" data-title="${esc(v.title||'')}" data-channel="${esc(v._channel||'')}"><img loading="lazy" src="${esc(th)}" alt=""><span class="dur">${fmtDur(v.duration)}</span></a><div class="meta"><div class="title">${esc(v.title||'Sin título')}</div><div class="row"><span class="channel">${esc(v._channel||'')}</span><span>${esc(relative(v.uploadedDate||v.uploadDate||''))}</span></div></div></article>`}).join('');document.querySelectorAll('.thumb').forEach(a=>a.onclick=e=>{e.preventDefault();openPlayer(a.dataset.id,a.dataset.title,a.dataset.channel)});$('#moreWrap').hidden=state.visible>=state.videos.length}
+async function load(){state.visible=PAGE_SIZE;if(!state.channels.length){state.videos=[];feed.innerHTML='<div class="empty">Añade tus canales y aquí aparecerán sus últimos vídeos en orden cronológico.</div>';$('#moreWrap').hidden=true;return}feed.innerHTML='<div class="spinner">Cargando tus canales…</div>';$('#moreWrap').hidden=true;const results=await Promise.all(state.channels.map(async c=>{try{const d=await api('/channel/'+encodeURIComponent(c.id));if(d?.name&&(c.name===c.id||!c.name))c.name=d.name;return (d.relatedStreams||[]).slice(0,20).map(v=>({...v,_channel:d.name||c.name}))}catch(e){return []}}));save();let videos=results.flat().filter(v=>vidId(v.url));if(state.filter==='long')videos=videos.filter(v=>!v.duration||v.duration>180);videos.sort((a,b)=>{const ad=Date.parse(a.uploadDate||a.uploadedDate||'')||Number(a.uploaded||0),bd=Date.parse(b.uploadDate||b.uploadedDate||'')||Number(b.uploaded||0);return bd-ad});state.videos=videos;if(!videos.length&&state.channels.length){feed.innerHTML='<div class="empty">No pude obtener vídeos ahora mismo. Los servidores públicos de consulta pueden fallar temporalmente. Pulsa ↻ para reintentar más tarde.</div>';$('#moreWrap').hidden=true;return}renderVideos()}
 function renderChannels(){const el=$('#channelList');el.innerHTML=state.channels.length?state.channels.map((c,i)=>`<div class="ch"><div><b>${esc(c.name)}</b><small>${esc(c.id)}</small></div><button class="btn danger" data-rm="${i}">Quitar</button></div>`).join(''):'<div class="help">Todavía no has añadido ningún canal.</div>';el.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{state.channels.splice(+b.dataset.rm,1);save();renderChannels();load()})}
 function openPlayer(id,title,channel){$('#frame').src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(id)+'?autoplay=0&rel=0&modestbranding=1';$('#pTitle').textContent=title;$('#pChannel').textContent=channel;$('#player').classList.add('on');history.pushState({player:true},'','#video')}
 function closePlayer(){if(!$('#player').classList.contains('on'))return;$('#frame').src='about:blank';$('#player').classList.remove('on');if(location.hash==='#video')history.back()}
-function openSettings(){renderChannels();$('#apiInput').value=state.api;settings.showModal()}
+function openSettings(){renderChannels();$('#apiInput').value=state.api||'';settings.showModal()}
 $('#openSettings').onclick=openSettings;$('#openChannels').onclick=openSettings;$('#closeSettings').onclick=()=>settings.close();$('#refresh').onclick=load;$('#showMore').onclick=()=>{state.visible+=PAGE_SIZE;renderVideos()};
-$('#addChannel').onclick=async()=>{const b=$('#addChannel'),inp=$('#channelInput');b.disabled=true;b.textContent='Buscando…';try{const c=await resolveChannel(inp.value);if(!state.channels.some(x=>x.id===c.id))state.channels.push(c);inp.value='';save();renderChannels();load()}catch(e){alert(e.message)}finally{b.disabled=false;b.textContent='Añadir'}};
-$('#saveApi').onclick=()=>{state.api=$('#apiInput').value.trim()||DEFAULT_API;save();load();alert('Servidor guardado')};$('#closePlayer').onclick=closePlayer;window.addEventListener('popstate',()=>{if($('#player').classList.contains('on')){$('#frame').src='about:blank';$('#player').classList.remove('on')}});
+$('#addChannel').onclick=async()=>{const b=$('#addChannel'),inp=$('#channelInput');b.disabled=true;b.textContent='Añadiendo…';try{const c=await resolveChannel(inp.value);if(!state.channels.some(x=>x.id===c.id)){state.channels.push(c);save()}inp.value='';renderChannels();await load()}catch(e){alert(e.message)}finally{b.disabled=false;b.textContent='Añadir'}};
+$('#channelInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#addChannel').click()}});
+$('#saveApi').onclick=()=>{state.api=$('#apiInput').value.trim().replace(/\/$/,'');save();load();alert(state.api?'Servidor preferido guardado. Si falla, se probarán otros automáticamente.':'Modo automático activado.')};$('#closePlayer').onclick=closePlayer;window.addEventListener('popstate',()=>{if($('#player').classList.contains('on')){$('#frame').src='about:blank';$('#player').classList.remove('on')}});
 document.querySelectorAll('.chip').forEach(b=>{if(b.dataset.filter===state.filter)b.classList.add('on');else b.classList.remove('on');b.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');state.filter=b.dataset.filter;save();load()}});
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');load();
 </script>
